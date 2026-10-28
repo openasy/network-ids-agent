@@ -31,19 +31,21 @@ docker run -d --name network-ids-agent --restart unless-stopped --read-only \
   --cap-drop ALL --security-opt no-new-privileges \
   -v network-ids-agent-data:/data -v "$PWD/openasy-agent-kek:/run/secrets/openasy-agent-kek:ro" \
   -v /var/log/suricata:/var/log/suricata:ro -v /etc/suricata/openasy:/rules \
-  -v /var/run/suricata:/var/run/suricata \
+  -v /var/run/suricata:/var/run/suricata --group-add "$(getent group suricata | cut -d: -f3)" \
   -e NETWORK_IDS_URL=https://ids.example.com -e NETWORK_IDS_ENROLL_TOKEN=oie_... \
   ghcr.io/openasy/network-ids-agent:0.1.0
 ```
 
 The agent runs as uid 65532. It must be able to read `eve.json`, write `/etc/suricata/openasy` and write to Suricata's
-command socket: give it Suricata's group with `--group-add` (or run it as Suricata's user with `--user`). It must be
-the same version as Network IDS (ADR 0019); another version is refused.
+command socket: the command above gives it Suricata's group with `--group-add`; where the files are not readable by
+that group, run it as Suricata's user with `--user`. It must be the same version as Network IDS (ADR 0019); another
+version is refused.
 
 In `suricata.yaml`, write EVE JSON with the event types above (`community-id: true` links flows to other tools), add
 `/etc/suricata/openasy/openasy.rules` to `rule-files`, set `threshold-file: /etc/suricata/openasy/threshold.config`,
-and enable `unix-command`. The threshold file is the agent's: suppressions you kept in another one move to Network
-IDS. Rulesets such as ET Open stay with `suricata-update`.
+and enable `unix-command`. Start Suricata without `-s` or `-S`: with either, it cannot reload its rules. The threshold
+file is the agent's: suppressions you kept in another one move to Network IDS. Rulesets such as ET Open stay with
+`suricata-update`.
 
 | Variable | Default | |
 | --- | --- | --- |

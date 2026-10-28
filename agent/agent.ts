@@ -92,19 +92,21 @@ export function createAgent(o: AgentOptions) {
       // The hash is the agent's own, of what it checked, not the one it was told.
       const hash = hashOf(c);
       const changed = writeFiles(o.rulesDir, files);
-      if (changed || status.configError) {
-        if (o.socketPath) {
-          await reload(o.socketPath);
-          status.reloads++;
-        } else log("warn", "rules written; Suricata was not asked to reload (no SURICATA_SOCKET)");
-      }
+      // Reloaded until it once worked for this hash, also when the files were already written: Suricata may not
+      // have loaded them, if the last reload failed or the agent stopped before it.
+      if (o.socketPath) {
+        await reload(o.socketPath);
+        status.reloads++;
+      } else log("warn", "rules written; Suricata was not asked to reload (no SURICATA_SOCKET)");
       o.state.configHash = hash;
       status.configError = null;
       save();
-      log("info", "rules written", { rules: c.rules.length, suppressions: c.suppressions.length, reloaded: changed && !!o.socketPath });
+      log("info", "rules written", { rules: c.rules.length, suppressions: c.suppressions.length, changed, reloaded: !!o.socketPath });
     } catch (err) {
-      status.configError = (err as Error).message;
-      log("error", "rules not applied", { error: status.configError });
+      const error = (err as Error).message;
+      // Tried again every round; said once until it changes.
+      if (error !== status.configError) log("error", "rules not applied", { error });
+      status.configError = error;
     }
   }
 

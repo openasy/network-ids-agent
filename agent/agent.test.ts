@@ -51,9 +51,11 @@ async function fakeSuricata(path: string, answer = { return: "OK", message: "don
   const received: unknown[] = [];
   const server = createNet((sock) => {
     sock.on("data", (d) => {
-      const m = JSON.parse(d.toString("utf8")) as { version?: string; command?: string };
+      const raw = d.toString("utf8");
+      const m = JSON.parse(raw) as { version?: string; command?: string };
       received.push(m);
-      sock.write(JSON.stringify(m.version ? { return: "OK" } : answer));
+      // Protocol 0.2 reads a command up to its newline; one without is never answered.
+      if (m.version || raw.endsWith("\n")) sock.write(JSON.stringify(m.version ? { return: "OK" } : answer) + "\n");
     });
   });
   await new Promise<void>((r) => server.listen(path, r));
