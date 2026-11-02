@@ -2,7 +2,7 @@
 
 # The agent has no runtime dependencies: Node runs the TypeScript sources directly, and it needs no other tool. It
 # reads Suricata's eve.json, writes its two rule files and talks to Suricata's command socket (ADR 0070).
-FROM node:26.12.0-trixie-slim AS build
+FROM node:26.13.0-trixie-slim AS build
 RUN mkdir -p /out/data /out/rules
 
 FROM gcr.io/distroless/nodejs26-debian13:nonroot
