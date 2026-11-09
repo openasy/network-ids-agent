@@ -33,7 +33,7 @@ docker run -d --name network-ids-agent --restart unless-stopped --read-only \
   -v /var/log/suricata:/var/log/suricata:ro -v /etc/suricata/openasy:/rules \
   -v /var/run/suricata:/var/run/suricata --group-add "$(getent group suricata | cut -d: -f3)" \
   -e NETWORK_IDS_URL=https://ids.example.com -e NETWORK_IDS_ENROLL_TOKEN=oie_... \
-  ghcr.io/openasy/network-ids-agent:0.1.0
+  ghcr.io/openasy/network-ids-agent:0.1.2
 ```
 
 The agent runs as uid 65532. It must be able to read `eve.json`, write `/etc/suricata/openasy` and write to Suricata's

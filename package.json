@@ -1,6 +1,6 @@
 {
   "name": "@openasy/network-ids-agent",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "private": true,
   "description": "OpenAsy Network IDS agent: next to Suricata on a sensor, it sends the EVE events Suricata writes to Network IDS, and writes and reloads the local rules and suppressions it is given.",
   "license": "AGPL-3.0-only",
